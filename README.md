@@ -1,13 +1,12 @@
-# Sample Hardhat Project
+# Real-Estate-Market : HousieGo
+> lechatelierlenz
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+## 项目主要介绍
 
-Try running some of the following tasks:
+## 如何运行
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
-```
+## 功能实现分析
+
+## 项目运行截图
+
+## 其他补充

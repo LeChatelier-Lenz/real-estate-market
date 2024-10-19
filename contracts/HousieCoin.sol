@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract HousieCoin is ERC20, Ownable {
     constructor() ERC20("HousieCoin", "HSC") Ownable(msg.sender) {
         // 初始步骤：为合约的所有者铸造100个HousieCoin
-        _mint(msg.sender, 100 * 10 ** 18);
+        _mint(msg.sender, 100);
     }
     // 为指定地址铸造HousieCoin
     function mint(address to,  uint256 amount) public onlyOwner {
@@ -19,4 +19,3 @@ contract HousieCoin is ERC20, Ownable {
         _mint(to, amount);
     }
 }
-s

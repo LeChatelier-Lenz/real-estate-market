@@ -5,13 +5,16 @@ const config: HardhatUserConfig = {
   solidity: "0.8.27",
   networks: {
     ganache: {
-      url: 'http://localhost:8545',
+      // chainId: 5777,
+      url: 'http://localhost:8546',
       accounts: [
-        '0x96ef3db62f1da3d05bd19174f7cb0fda21b17fd728978795ea21ba44978379fe',
-        '0x5bc4b0a106cdede6e522c8443ff088e96feac8794b5c25ca389d744ee8275f8d',
-        '0x79808ffb26e1cdb7c203c504fd8ed43b6f9f1900174f3fbcb281553ab676a598',
-        '0x4700d07040678cd4dfb061f96c9455fb8a1e87ea2b2a310d32d1a28248bb5df0',
-        '0x535c6a9d2fa3946d96546edafd7eb026311690c355b99a2b428eb15aae75ac90'
+        '0x652675cae473bd83dece4cd34afe481e1238f8d6a6a795c34daaba52b229a715',
+        '0x9f8259700f787d6ea475ce7fed18e300de3d5f4721a60576db6c6546465dfbec',
+        '0x0e76079fa68b51aac7b6a35b6b9322638c85745de28b03fdf8d321cec2ed0874',
+        '0x739aee50bdf0ff68b12c4aa0fe036b23e253cf3d34081c7109f56cc8f28f307a',
+        '0xbd0679fa1a2ce4527e6ad2000520e5bf0ef881b4ef28fa762d322f6e759aa21b',
+        '0x1a9dddc5769c870f998e1b6c92596277cc585080e8e874cc919bbeb7bb40aca0',
+        '0x4915777504a4273874195dd342becf14bbc86ce126b86dc254db5b66595646b7'
       ]
     },
   },

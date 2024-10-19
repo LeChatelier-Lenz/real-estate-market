@@ -17,12 +17,11 @@ contract RealEstate is Ownable, ERC721 {
 
         // 给一定数量的账户初始化颁发房地产NFT
         // 假如给定的账户数量为5，并且初始化5个账户地址
-        address[] memory accounts = new address[](5);
-        accounts[0] = 0x740f37411Bc676BDb18f29B65dC29c846f8db04B;
-        accounts[1] = 0x8973DB38E758f9fe169E3Df78eC768032BB43D3b;
-        accounts[2] = 0xf56a14e8172b102FbaBC56aC69945f5804fb20Ce;
-        accounts[3] = 0x4f741fb1220114872D10371706c9de310F30CF1c;
-        accounts[4] = 0xa0D86a03ca62605A2040e6bc0034AFcAEDA3Fffc;
+        address[] memory accounts = new address[](4);
+        accounts[0] = 0xB87b7B49aab5a63C52B94588fD3850ff377a3bc4;
+        accounts[1] = 0x8f2C8A8Ee279864CE4Bd7d50Cc5C7930f419A212;
+        accounts[2] = 0x73fe8A4dFc401dA4cf8Fe8ccDDF7fFB3BCb66829;
+        accounts[3] = 0x7B3b330cc881B852fa275F842Ac969f2935fd011;
         for (uint i = 0; i < accounts.length; i++) {
             awardRE(accounts[i]);
         }

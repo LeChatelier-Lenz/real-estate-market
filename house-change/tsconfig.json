@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2020",
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "esnext",
+      "esnext.asynciterable",
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -18,9 +19,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["node", "jest"],
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

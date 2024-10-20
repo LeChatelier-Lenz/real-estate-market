@@ -24,7 +24,9 @@ contract TokenSale is Ownable {
 
     // 接收以太币并兑换代币
     receive() external payable {
+        // value是msg对象的一个属性，表示发送者发送的以太币数量，单位是wei
         uint256 tokenAmount = msg.value * rate;
+        // balanceOf方法是ERC20合约中的一个方法，用于查询指定地址的代币余额,单位是wei
         require(token.balanceOf(address(this)) >= tokenAmount, "Not enough tokens in the contract");
 
         // 发送代币给发送者

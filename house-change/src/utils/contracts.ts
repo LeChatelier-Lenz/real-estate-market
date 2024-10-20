@@ -4,7 +4,7 @@ import TokenSale from './abis/TokenSale.json'
 import RealEstate from './abis/RealEstate.json'
 import RESwap from './abis/RESwap.json'
 
-const Web3 = require('web3');
+import Web3 from 'web3'
 
 //@ts-ignore
 //创建web3实例
@@ -23,6 +23,6 @@ const RESwapABI = RESwap.abi
 const HouseCoinContract = new web3.eth.Contract(HousieCoinABI,HousieCoinAddress);
 const TokenSaleContract = new web3.eth.Contract(TokenSaleABI,TokenSaleAddress);
 const RealEstateContract = new web3.eth.Contract(RealEstateABI,RealEstateAddress);
-const RESwapContract = new web3.eht.Contract(RESwapABI,RESwapAddress);
+const RESwapContract = new web3.eth.Contract(RESwapABI,RESwapAddress);
 
 export {web3,HouseCoinContract,TokenSaleContract,RealEstateContract,RESwapContract}

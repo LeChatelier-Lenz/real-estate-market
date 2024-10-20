@@ -56,4 +56,8 @@ contract RealEstate is Ownable, ERC721 {
     function tokensOf(address owner) public view returns (uint256[] memory) {
         return _ownedTokens[owner];
     }
+    //应该改成如下形式
+    // function tokensOfMine() public view returns (uint256[] memory) {
+    //     return _ownedTokens[msg.sender];
+    //}
 }

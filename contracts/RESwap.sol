@@ -51,7 +51,7 @@ contract RESwap is IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    // 挂单: 卖家上架NFT，合约地址为_nftAddr，tokenId为_tokenId，价格_price为HSC的数量
+    // 挂单: 卖家上架NFT，合约地址为_nftAddr，tokenId为_tokenId，价格_price为wei的数量
     function list(uint256 _tokenId, uint256 _price) public{
         IERC721 _nft = IERC721(nftAddr); // 声明IERC721接口合约变量
         require(_nft.getApproved(_tokenId) == address(this), "Need Approval"); // 合约得到授权
@@ -136,7 +136,7 @@ contract RESwap is IERC721Receiver {
 
     // 获取挂单列表
     function getAllOrders() public view returns (uint256[] memory) {
-        return orders;
+        return orders; //注意这里返回的是挂单列表（tokenId）
     }
 
     // 去除挂单列表中的某个元素

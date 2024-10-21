@@ -1,8 +1,5 @@
 {
-  "TokenModule#HousieCoin": "0x7230e3Dd98d08abA1db0b30Da2c05d3325f4dCB2",
-  "TokenSaleModule#HousieCoin": "0x7230e3Dd98d08abA1db0b30Da2c05d3325f4dCB2",
-  "TokenSaleModule#TokenSale": "0x6e1Abe0fe0841dAaA375dBf3AB0b4b5Ac094548D",
-  "RESwapModule#HousieCoin": "0x7230e3Dd98d08abA1db0b30Da2c05d3325f4dCB2",
-  "RealEstateModule#RealEstate": "0x9f24bd1b49c57cBcC239F8e8b6A58AfAc0C92326",
-  "RESwapModule#RESwap": "0xAC44B4bc753A31535DD2a1F4dd9A2510671467F6"
+  "TokenModule#HousieCoin": "0x59d113Dba7d6aA2e87fdaa7D8b46Cc111dAD5754",
+  "RealEstateModule#RealEstate": "0x42d5b077Bb86CD43A6124981911999f06da05dAc",
+  "RESwapModule#RESwap": "0xEC243050F57Ca476DeFa0acC405eDB4d509C2c8C"
 }

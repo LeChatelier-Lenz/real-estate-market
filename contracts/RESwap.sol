@@ -4,16 +4,20 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /// @title 房地产交易合约
 /// @author lechatelierlenz
 /// @notice 为了让房地产交易合约能够生效，需要在RealEstate合约中调用approve方法授权
+import "hardhat/console.sol";
+
 contract RESwap is IERC721Receiver {
     ERC20 public token; // 房屋交易市场使用的代币
     address public nftAddr; // 房地产NFT合约地址
     uint256[] private orders; // 挂单列表
+    address public feeReceiver;
 
     // 房屋交易市场的主要事件
     // List: 挂单事件
@@ -40,6 +44,7 @@ contract RESwap is IERC721Receiver {
         require(_nftAddr != address(0), "Invalid NFT address");
         token = ERC20(_tokenAddr);
         nftAddr = _nftAddr;
+        feeReceiver = msg.sender;
     }
 
 
@@ -48,7 +53,7 @@ contract RESwap is IERC721Receiver {
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) public override returns (bytes4) {
         // 处理接收到的NFT，比如记录日志或触发某些操作
         emit NFTReceived(operator, from, tokenId, data);
-        return IERC721Receiver.onERC721Received.selector;
+        return this.onERC721Received.selector;
     }
 
     // 挂单: 卖家上架NFT，合约地址为_nftAddr，tokenId为_tokenId，价格_price为wei的数量
@@ -114,14 +119,10 @@ contract RESwap is IERC721Receiver {
 
         // 将NFT转给买家
         _nft.safeTransferFrom(address(this), msg.sender, _tokenId);
-        // 买家将手续费HSC转给代理
-        Ownable certain = Ownable(nftAddr);
-        token.transfer(certain.owner(), agencyFee);
+        // 买家将手续费HSC转给代币合约
+        token.transfer(feeReceiver, agencyFee);
         // 买家将HSC转给卖家,并将扣除手续费后的余额转回给买家
         token.transfer(_order.owner, _order.price);
-        if (amount > _order.price + agencyFee) {
-            token.transfer(msg.sender, amount - agencyFee - _order.price);
-        }
         delete nftList[nftAddr][_tokenId]; // 删除order
 
         removeOrder(_tokenId); // 从挂单列表中删除
@@ -139,7 +140,7 @@ contract RESwap is IERC721Receiver {
         return orders; //注意这里返回的是挂单列表（tokenId）
     }
 
-    // 去除挂单列表中的某个元素
+    // 去除挂单列表中的某个元素,这里是tokenId
     function removeOrder(uint256 _tokenId) public {
         for (uint i = 0; i < orders.length; i++) {
             if (orders[i] == _tokenId) {

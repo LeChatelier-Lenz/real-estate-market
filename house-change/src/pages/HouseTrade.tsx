@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, InputAdornment, Paper } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import {useEffect, useState} from 'react';
-import {HouseCoinContract, web3,RESwapContract, RealEstateContract, TokenSaleContract} from '../utils/contracts';
+import {HousieCoinContract, web3,RESwapContract, RealEstateContract} from '../utils/contracts';
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import TextField from '@mui/material/TextField';
 import "./style.css";
@@ -35,6 +35,7 @@ const HouseTradePage = () => {
     const [PurchaseId, setPurchaseId] = useState<number | null>(null)
     const [PurchasePrice, setPurchasePrice] = useState<number | null>(null)
     const [charge, setCharge] = useState<number | null>(null)
+    // const [rate, setRate] = useState(1)
 
     const isValidEthereumAddress = (address: string): boolean => {
         return /^0x[a-fA-F0-9]{40}$/.test(address);
@@ -99,15 +100,29 @@ const HouseTradePage = () => {
                 }
             }
         }
-
         initCheckAccounts()
     }, [])
+
+    // //初始化根据用户的账户信息，获取对应的HSC合约汇率信息
+    // useEffect(() => {
+    //     const getRate = async () => {
+    //         if (HousieCoinContract) {
+    //             const rate = await HousieCoinContract.methods.getRate().call()
+    //             if (!isNaN(Number(rate))) {
+    //                 setRate(Number(rate))
+    //             }
+    //         } else {
+    //             alert('Contract not exists.')
+    //         }
+    //     }
+    //     getRate()
+    // }, [rate])
 
     useEffect(() => {
         // 查看对应账户在代币合约中的余额(HSC)
         const getAccountInfo = async () => {
-            if (HouseCoinContract) {
-                const ab = await HouseCoinContract.methods.balanceOf(account).call()
+            if (HousieCoinContract) {
+                const ab = await HousieCoinContract.methods.balanceOf(account).call()
                 // 如果返回的是数字，说明调用成功，setAccountBalance
                 if (!isNaN(Number(ab))) {
                     setAccountBalance(Number(ab))
@@ -156,7 +171,7 @@ const HouseTradePage = () => {
                             const item = {
                                 orderId: NFTIdlist[i]?NFTIdlist[i].toString():'0',
                                 seller: order.owner,
-                                price: Number(order.price)/(10**18),
+                                price: Number(order.price)/(10**18), //将价格转换成HSC
                                 //时间戳转换成一般时间格式，作为字符串存储
                                 listedTime: new Date(Number(order.listedTimestamp)*1000).toLocaleString()
                             }
@@ -209,7 +224,7 @@ const HouseTradePage = () => {
             }
             // 执行挂单操作
             const tokenId = checked[0];
-            const priceHSC = price*10**18;
+            const priceHSC = BigInt(price * (10 ** 18));
             if(RealEstateContract && RESwapContract){
                 try{
                     const RESwapaddr = RESwapContract.options.address;
@@ -252,7 +267,7 @@ const HouseTradePage = () => {
             } 
             if (RealEstateContract && RESwapContract) {
                 const tokenId = checked[0];
-                const priceHSC = price*10**18;  
+                const priceHSC = BigInt(price * (10 ** 18));
                 try{
                     const res = await RESwapContract.methods.update(tokenId,priceHSC).send({from:account});
                     console.log('res:',res)
@@ -328,11 +343,11 @@ const HouseTradePage = () => {
             alert('请输入正确的充值金额');
             return;
         }
-        if (HouseCoinContract) {
+        if (HousieCoinContract) {
             try{
                 //转化为整形
-                const value = charge;
-                const res = await web3.eth.sendTransaction({from:account,to:TokenSaleContract.options.address,value:web3.utils.toWei(value,'ether'),gas:210000});
+                const value = BigInt(charge * (10 ** 18));
+                const res = await web3.eth.sendTransaction({from:account,to:HousieCoinContract.options.address,value:value,gas:210000});
                 console.log('res:',res)
             }catch(e){
                 console.log('error:',e)
@@ -356,13 +371,14 @@ const HouseTradePage = () => {
                     console.error("Invalid Ethereum address", account);
                     return; // 提前返回或处理错误
                 }
-                const price = PurchasePrice?PurchasePrice:0;
-                const res = await RESwapContract.methods.purchase(PurchaseId,web3.utils.toWei(price,"ether")).send({from:account});
+                const price = PurchasePrice?BigInt(PurchasePrice*(10**18)):0;
+                const res = await RESwapContract.methods.purchase(PurchaseId,price).send({from:account,value:"10",gas:"210000"});
                 console.log('res:',res)
             }catch(e){
                 console.log('error:',e)
             }
         }
+
     }
 
     return (
@@ -375,17 +391,35 @@ const HouseTradePage = () => {
                 {/* 用户名可能过长，提供展开操作 */}
                 {/* <div>当前用户：{account === '' ? '无用户连接' : account}</div> */}
                 <div><b>当前用户：</b>{account === '' ? '无用户连接' : account}</div>
-                <div><b>HousieCoin(豪斯币)</b>余额：<b>{account === '' ? 0 : accountBalance/(10**18 )} </b> HSC </div>
+                <div><b>HousieCoin(豪斯币)</b>余额：<b>{account === '' ? 0 : accountBalance/(10**18)} </b> HSC </div>
+                <div><b>Ethereum(以太坊)</b>余额：<b>{account === '' ? 0 : accountETHBalance/(10**18)} </b> ETH</div>
                 <div className='balance'>
                     <div className='charge'>
-                        <TextField
-                            value={charge}
-                            onChange={handleChargeChange}
+                    <TextField
+                            value={charge} //假设汇率为20
                             id="outlined-basic"
-                            label="充值金额"
+                            label="以太坊"
+                            onChange={handleChargeChange}
                             variant="outlined"
                             size="small"
+                            disabled={account === ''}
                             type="number"
+                            style={{"width":"175px"}}
+                            slotProps={{
+                                input: {
+                                  startAdornment: <InputAdornment position="start">ETH</InputAdornment>,
+                                },
+                              }}
+                        />
+                        <TextField
+                            value={charge?charge*20:0} //假设汇率为20
+                            id="outlined-basic"
+                            label="对应充值金额"
+                            variant="outlined"
+                            disabled={true}
+                            size="small"
+                            type="number"
+                            style={{"width":"175px"}}
                             slotProps={{
                                 input: {
                                   startAdornment: <InputAdornment position="start">HSC</InputAdornment>,
@@ -394,9 +428,11 @@ const HouseTradePage = () => {
                         />
                         <Button variant="contained" size = "small" style={{"margin":"10px"}} disabled={charge===null || charge <=0} onClick={confirmCharge} >充值</Button>
                     </div>
-                    
+                    <div className="rate">
+                        <div>汇率：1 ETH = 20 HSC</div>
+                    </div>
                 </div>
-                <div><b>Ethereum(以太坊)</b>余额：<b>{account === '' ? 0 : accountETHBalance/(10**18)} </b> ETH</div>
+                
             </div>
             {/* 在页面上展示用户的NFT列表（只有Id） */}
             <div className='my-nft-list'>
@@ -467,6 +503,11 @@ const HouseTradePage = () => {
                     type="number"   
                     margin='normal'
                     size='small'
+                    slotProps={{
+                        input: {
+                          startAdornment: <InputAdornment position="start">HSC</InputAdornment>,
+                        },
+                      }}
                 />
                 <Button variant="contained" onClick={confirmPurchase} style={{"margin":"10px"}}>确认</Button>
             </div>

@@ -24,6 +24,7 @@ contract RealEstate is Ownable, ERC721 {
         accounts[3] = 0x7B3b330cc881B852fa275F842Ac969f2935fd011;
         for (uint i = 0; i < accounts.length; i++) {
             awardRE(accounts[i]);
+            awardRE(accounts[i]);
         }
     }
 
@@ -56,8 +57,9 @@ contract RealEstate is Ownable, ERC721 {
     function tokensOf(address owner) public view returns (uint256[] memory) {
         return _ownedTokens[owner];
     }
-    //应该改成如下形式
-    // function tokensOfMine() public view returns (uint256[] memory) {
-    //     return _ownedTokens[msg.sender];
-    //}
+
+    // 返回合约的所有者
+    function getManager() public view returns (address) {
+        return owner();
+    }
 }

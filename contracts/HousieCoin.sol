@@ -38,4 +38,13 @@ contract HousieCoin is ERC20, Ownable {
     function setRate(uint256 newRate) external onlyOwner {
         rate = newRate;
     }
+
+    //允许读取兑换率
+    function getRate() external view returns (uint256) {
+        return rate;
+    }
+
+    function getManager() external view returns (address) {
+        return owner();
+    }
 }

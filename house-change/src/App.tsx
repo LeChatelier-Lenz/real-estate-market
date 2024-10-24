@@ -4,8 +4,13 @@ import HouseTradePage from './pages/HouseTrade';
 
 function App() {
   return (
-    <div className="App">
-        <HouseTradePage />
+    <div>
+        <div className="Title">
+            <h1>House Trade</h1>
+        </div>
+        <div className="App">
+            <HouseTradePage />
+        </div>
     </div>
   );
 }

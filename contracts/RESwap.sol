@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./HousieCoin.sol";
 
 
 /// @title 房地产交易合约
@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
 contract RESwap is IERC721Receiver {
-    ERC20 public token; // 房屋交易市场使用的代币
+    address payable public tokenAddr; // 房屋交易市场使用的代币
     address public nftAddr; // 房地产NFT合约地址
     uint256[] private orders; // 挂单列表
     address public feeReceiver;
@@ -39,10 +39,10 @@ contract RESwap is IERC721Receiver {
         uint256 price;
     }
 
-    constructor(address _tokenAddr, address _nftAddr) {
+    constructor(address payable _tokenAddr, address _nftAddr) {
         require(_tokenAddr != address(0), "Invalid token address");
         require(_nftAddr != address(0), "Invalid NFT address");
-        token = ERC20(_tokenAddr);
+        tokenAddr = _tokenAddr;
         nftAddr = _nftAddr;
         feeReceiver = msg.sender;
     }
@@ -53,7 +53,7 @@ contract RESwap is IERC721Receiver {
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) public override returns (bytes4) {
         // 处理接收到的NFT，比如记录日志或触发某些操作
         emit NFTReceived(operator, from, tokenId, data);
-        return this.onERC721Received.selector;
+        return IERC721Receiver.onERC721Received.selector;
     }
 
     // 挂单: 卖家上架NFT，合约地址为_nftAddr，tokenId为_tokenId，价格_price为wei的数量
@@ -108,23 +108,47 @@ contract RESwap is IERC721Receiver {
     }
 
     // 购买: 买家购买NFT，合约为nftAddr，tokenId为_tokenId,调用函数时需要进行HSC的转账,amount为HSC的数量
-    function purchase(uint256 _tokenId, uint256 amount) payable public {
+    function purchase(uint256 _tokenId) payable public {
         HouseOrder storage _order = nftList[nftAddr][_tokenId]; // 取得Order
-        uint256 agencyFee = amount * (block.timestamp - _order.listedTimestamp) / 1000 / ( 3600 * 24 ); // 价格随时间变化     
-        require(_order.price > 0, "Invalid Price"); // NFT价格大于0
-        require(amount >= _order.price + agencyFee, "Increase price"); // 购买价格大于标价+手续费,因此调用时要注意传入的amount
-        // 声明IERC721接口合约变量
+        uint256 agencyFee = _order.price * (block.timestamp - _order.listedTimestamp) / 1000 / ( 3600 * 24 ); // 价格随时间变化     
+        require(agencyFee > 0, "Invalid Fee"); // 手续费大于0
         IERC721 _nft = IERC721(nftAddr);
         require(_nft.ownerOf(_tokenId) == address(this), "Invalid Order"); // NFT在合约中
-
+        require(_order.price > 0, "Invalid Price"); // NFT价格大于0
+        // 不可购买自己的NFT
+        require(_order.owner != msg.sender, "Not Allowed to Buy Yourself");
         // 将NFT转给买家
         _nft.safeTransferFrom(address(this), msg.sender, _tokenId);
-        // 买家将手续费HSC转给代币合约
-        token.transfer(feeReceiver, agencyFee);
-        // 买家将HSC转给卖家,并将扣除手续费后的余额转回给买家
-        token.transfer(_order.owner, _order.price);
-        delete nftList[nftAddr][_tokenId]; // 删除order
 
+        HousieCoin token = HousieCoin(tokenAddr); // 声明HousieCoin合约变量
+        require(token.balanceOf(msg.sender) >= _order.price, "Not enough token balance");
+
+
+        // 分别将代币转给卖家和手续费收取者，注意此处要用transferFrom，首先要approve
+        require(token.allowance(msg.sender, address(this)) >= _order.price, "No Approval for Swap platform or Not enough token balance");
+
+        // 卖家付手续费模式
+
+        // 买家提交代币转给卖家，扣除手续费
+        bool sent1 = token.transferFrom(msg.sender, _order.owner, _order.price-agencyFee);
+        console.log("sent1", sent1);
+        require(sent1, "Token transfer failed : Price");
+        
+        
+
+        // 买家提交代币转给手续费收取者
+        bool sent2 = token.transferFrom(msg.sender, feeReceiver, agencyFee);
+        console.log("sent2", sent2);
+        require(sent2, "Token transfer failed : Agency Fee");
+
+        // // 将多余的代币转回给买家
+        // if (token.allowance(msg.sender, address(this)) > 0) {
+        //     bool sent3 = token.transferFrom(msg.sender, msg.sender, token.allowance(msg.sender, address(this)));
+        //     console.log("sent3", sent3);
+        //     require(sent3, "Token transfer failed : Excess");
+        // }
+
+        delete nftList[nftAddr][_tokenId]; // 删除order
         removeOrder(_tokenId); // 从挂单列表中删除
         // 释放Purchase事件
         emit Purchase(msg.sender, nftAddr, _tokenId, _order.price);
@@ -149,5 +173,9 @@ contract RESwap is IERC721Receiver {
                 break;
             }
         }
+    }
+
+    function getAgent() public view returns (address) {
+        return feeReceiver;
     }
 }
